@@ -1,18 +1,24 @@
 package app.akexorcist.joystickcontroller;
 
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.app.Activity;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import at.abraxas.amarino.Amarino;
+import at.abraxas.amarino.AmarinoIntent;
 
 public class Main extends Activity {
 	RelativeLayout layout_joystick;
 	ImageView image_joystick, image_border;
 	TextView textView1, textView2, textView3, textView4, textView5;
+	private String DEVICE_ADDRESS = "98:D3:31:B1:77:84";
 	
 	JoyStickClass js;
 	
@@ -48,7 +54,9 @@ public class Main extends Activity {
 					textView4.setText("Distance : " + String.valueOf(js.getDistance()));
 					
 					int direction = js.get8Direction();
-					if(direction == JoyStickClass.STICK_UP) {
+					SendArgtoArduino(direction,(int)js.getDistance(), (int)js.getAngle());
+					if(direction == JoyStickClass.STICK_UP) 
+					{
 						textView5.setText("Direction : Up");
 					} else if(direction == JoyStickClass.STICK_UPRIGHT) {
 						textView5.setText("Direction : Up Right");
@@ -73,9 +81,45 @@ public class Main extends Activity {
 					textView3.setText("Angle :");
 					textView4.setText("Distance :");
 					textView5.setText("Direction :");
+					SendArgtoArduino(0, 0, 0);
 				}
 				return true;
 			}
         });
-    } 	
+    }
+    
+    @Override
+    protected void onStart(){
+    	super.onStart();
+    	
+    	//SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+    	//DEVICE_ADDRESS = prefs.getString("DEVICE_ADDRESS", "NULL");
+    	Amarino.connect(this, DEVICE_ADDRESS);
+
+    }
+    
+    @Override
+    protected void onStop() {
+    	super.onStop();    	
+    	// if you connect in onStart() you must not forget to disconnect when your app is closed
+    	Amarino.disconnect(this, DEVICE_ADDRESS);
+
+    }
+
+
+    @Override
+    protected void onResume(){
+    	super.onResume();
+    	Amarino.connect(this, DEVICE_ADDRESS);
+    	
+    }
+    
+    private void SendArgtoArduino(int Direction, int Distance, int  Angle)
+    {
+    	if (Distance > 255)
+    		Distance = 255;
+    	int arg[] = {Direction, Distance, Angle};
+    	Amarino.sendDataToArduino(this, DEVICE_ADDRESS, 'A', Distance);
+    	Amarino.sendDataToArduino(this, DEVICE_ADDRESS, 'o', Direction);
+    }
 }
