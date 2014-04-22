@@ -5,6 +5,9 @@ import android.preference.PreferenceManager;
 import android.app.Activity;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
@@ -15,12 +18,13 @@ import at.abraxas.amarino.Amarino;
 import at.abraxas.amarino.AmarinoIntent;
 
 public class Main extends Activity {
-	RelativeLayout layout_joystick;
+	RelativeLayout layout_joystick, layout_joystick_left;
 	ImageView image_joystick, image_border;
 	TextView textView1, textView2, textView3, textView4, textView5;
 	private String DEVICE_ADDRESS = "98:D3:31:B1:77:84";
+	private UiDialog UiDialogSetting;
 	
-	JoyStickClass js;
+	JoyStickClass js, js_left;
 	
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,32 +52,32 @@ public class Main extends Activity {
 				js.drawStick(arg1);
 				if(arg1.getAction() == MotionEvent.ACTION_DOWN
 						|| arg1.getAction() == MotionEvent.ACTION_MOVE) {
-					textView1.setText("X : " + String.valueOf(js.getX()));
-					textView2.setText("Y : " + String.valueOf(js.getY()));
-					textView3.setText("Angle : " + String.valueOf(js.getAngle()));
-					textView4.setText("Distance : " + String.valueOf(js.getDistance()));
+					textView1.setText("X right: " + String.valueOf(js.getX()));
+					textView2.setText("Y right: " + String.valueOf(js.getY()));
+					textView3.setText("Angle right: " + String.valueOf(js.getAngle()));
+					textView4.setText("Distance right: " + String.valueOf(js.getDistance()));
 					
 					int direction = js.get8Direction();
-					SendArgtoArduino(direction,(int)js.getDistance(), (int)js.getAngle());
+					SendArgtoArduino_right(js.getY());
 					if(direction == JoyStickClass.STICK_UP) 
 					{
-						textView5.setText("Direction : Up");
+						textView5.setText("Direction right: Up");
 					} else if(direction == JoyStickClass.STICK_UPRIGHT) {
-						textView5.setText("Direction : Up Right");
+						textView5.setText("Direction right: Up Right");
 					} else if(direction == JoyStickClass.STICK_RIGHT) {
-						textView5.setText("Direction : Right");
+						textView5.setText("Direction right: Right");
 					} else if(direction == JoyStickClass.STICK_DOWNRIGHT) {
-						textView5.setText("Direction : Down Right");
+						textView5.setText("Direction right: Down Right");
 					} else if(direction == JoyStickClass.STICK_DOWN) {
-						textView5.setText("Direction : Down");
+						textView5.setText("Direction right: Down");
 					} else if(direction == JoyStickClass.STICK_DOWNLEFT) {
-						textView5.setText("Direction : Down Left");
+						textView5.setText("Direction right: Down Left");
 					} else if(direction == JoyStickClass.STICK_LEFT) {
-						textView5.setText("Direction : Left");
+						textView5.setText("Direction right: Left");
 					} else if(direction == JoyStickClass.STICK_UPLEFT) {
-						textView5.setText("Direction : Up Left");
+						textView5.setText("Direction right: Up Left");
 					} else if(direction == JoyStickClass.STICK_NONE) {
-						textView5.setText("Direction : Center");
+						textView5.setText("Direction right: Center");
 					}
 				} else if(arg1.getAction() == MotionEvent.ACTION_UP) {
 					textView1.setText("X :");
@@ -81,7 +85,62 @@ public class Main extends Activity {
 					textView3.setText("Angle :");
 					textView4.setText("Distance :");
 					textView5.setText("Direction :");
-					SendArgtoArduino(0, 0, 0);
+					SendArgtoArduino_right(0);
+				}
+				return true;
+			}
+        });
+	    
+	    layout_joystick_left = (RelativeLayout)findViewById(R.id.layout_joystick_left);
+
+        js_left = new JoyStickClass(getApplicationContext()
+        		, layout_joystick_left, R.drawable.image_button);
+        js_left.setStickSize(150, 150);
+        js_left.setLayoutSize(500, 500);
+        js_left.setLayoutAlpha(150);
+        js_left.setStickAlpha(100);
+        js_left.setOffset(90);
+        js_left.setMinimumDistance(50);
+	    
+	    layout_joystick_left.setOnTouchListener(new OnTouchListener() {
+			public boolean onTouch(View arg0, MotionEvent arg1) {
+				js_left.drawStick(arg1);
+				if(arg1.getAction() == MotionEvent.ACTION_DOWN
+						|| arg1.getAction() == MotionEvent.ACTION_MOVE) {
+					textView1.setText("X left: " + String.valueOf(js_left.getX()));
+					textView2.setText("Y left: " + String.valueOf(js_left.getY()));
+					textView3.setText("Angle left: " + String.valueOf(js_left.getAngle()));
+					textView4.setText("Distance left: " + String.valueOf(js_left.getDistance()));
+					
+					int direction = js_left.get8Direction();
+					SendArgtoArduino_left(js_left.getY());
+					if(direction == JoyStickClass.STICK_UP) 
+					{
+						textView5.setText("Direction left: Up");
+					} else if(direction == JoyStickClass.STICK_UPRIGHT) {
+						textView5.setText("Direction left: Up Right");
+					} else if(direction == JoyStickClass.STICK_RIGHT) {
+						textView5.setText("Direction left: Right");
+					} else if(direction == JoyStickClass.STICK_DOWNRIGHT) {
+						textView5.setText("Direction left: Down Right");
+					} else if(direction == JoyStickClass.STICK_DOWN) {
+						textView5.setText("Direction left: Down");
+					} else if(direction == JoyStickClass.STICK_DOWNLEFT) {
+						textView5.setText("Direction left: Down Left");
+					} else if(direction == JoyStickClass.STICK_LEFT) {
+						textView5.setText("Direction left: Left");
+					} else if(direction == JoyStickClass.STICK_UPLEFT) {
+						textView5.setText("Direction left: Up Left");
+					} else if(direction == JoyStickClass.STICK_NONE) {
+						textView5.setText("Direction left: Center");
+					}
+				} else if(arg1.getAction() == MotionEvent.ACTION_UP) {
+					textView1.setText("X :");
+					textView2.setText("Y :");
+					textView3.setText("Angle :");
+					textView4.setText("Distance :");
+					textView5.setText("Direction :");
+					SendArgtoArduino_left(0);
 				}
 				return true;
 			}
@@ -114,12 +173,35 @@ public class Main extends Activity {
     	
     }
     
-    private void SendArgtoArduino(int Direction, int Distance, int  Angle)
+    private void SendArgtoArduino_right(int y)
     {
-    	if (Distance > 255)
-    		Distance = 255;
-    	int arg[] = {Direction, Distance, Angle};
-    	Amarino.sendDataToArduino(this, DEVICE_ADDRESS, 'A', Distance);
-    	Amarino.sendDataToArduino(this, DEVICE_ADDRESS, 'o', Direction);
+    	if (y > 255)
+    		y = 255;
+    	else if (y < -255)
+    		y = -255;
+    	Amarino.sendDataToArduino(this, DEVICE_ADDRESS, 'A', y);
+    }
+    
+    private void SendArgtoArduino_left(int y)
+    {
+    	if (y > 255)
+    		y = 255;
+    	else if (y < -255)
+    		y = -255;
+    	Amarino.sendDataToArduino(this, DEVICE_ADDRESS, 'B', y);
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) 
+    {
+    	MenuInflater inflater=getMenuInflater();
+    	inflater.inflate(R.menu.more_tab_menu, menu);
+    	return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) 
+    {
+    	UiDialogSetting.UiDialog_main(this, item.getItemId(), DEVICE_ADDRESS);
+    	return true;
     }
 }

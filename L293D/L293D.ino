@@ -52,8 +52,8 @@ void setup()
   //mySerial.begin(9600);
   servo_1.attach(SERVO1_PWM);
   servo_2.attach(SERVO2_PWM);
-  meetAndroid.registerFunction(SetDirection, 'o');
-  meetAndroid.registerFunction(SetDistance, 'A');
+  meetAndroid.registerFunction(SetRight, 'A');
+  meetAndroid.registerFunction(SetLeft, 'B');
 }
 
 void loop()
@@ -82,6 +82,30 @@ void loop()
   meetAndroid.receive(); // you need to keep this in your loop() to receive events
   delay(100);
 }
+
+void SetRight(byte flag, byte numOfValues)
+{
+  int y = meetAndroid.getInt(); 
+  if(y < 0)
+    motor(3, FORWARD, abs(y));
+  else if(y > 0)  
+    motor(3, BACKWARD, abs(y));
+  else
+    motor(3, RELEASE, 0);
+}
+
+void SetLeft(byte flag, byte numOfValues)
+{
+  int y = meetAndroid.getInt(); 
+  if(y < 0)
+    motor(4, FORWARD, abs(y));
+  else if(y > 0)  
+    motor(4, BACKWARD, abs(y));
+  else
+    motor(4, RELEASE, 0);
+}
+
+
 
 void SetDistance(byte flag, byte numOfValues)
 {
